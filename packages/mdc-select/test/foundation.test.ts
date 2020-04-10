@@ -57,9 +57,9 @@ describe('MDCSelectFoundation', () => {
       'setRippleCenter',
       'notifyChange',
       'setSelectedText',
-      'isSelectedTextFocused',
-      'getSelectedTextAttr',
-      'setSelectedTextAttr',
+      'isSelectAnchorFocused',
+      'getSelectAnchorAttr',
+      'setSelectAnchorAttr',
       'openMenu',
       'closeMenu',
       'getAnchorElement',
@@ -219,7 +219,7 @@ describe('MDCSelectFoundation', () => {
   it('#handleMenuClosed set aria-expanded attribute to false', () => {
     const {foundation, mockAdapter} = setupTest();
     foundation.handleMenuClosed();
-    expect(mockAdapter.setSelectedTextAttr)
+    expect(mockAdapter.setSelectAnchorAttr)
         .toHaveBeenCalledWith('aria-expanded', 'false');
   });
 
@@ -439,7 +439,7 @@ describe('MDCSelectFoundation', () => {
   it('#handleClick sets the aria-expanded', () => {
     const {foundation, mockAdapter} = setupTest();
     foundation.handleClick(0);
-    expect(mockAdapter.setSelectedTextAttr)
+    expect(mockAdapter.setSelectAnchorAttr)
         .toHaveBeenCalledWith('aria-expanded', 'true');
   });
 
@@ -475,7 +475,7 @@ describe('MDCSelectFoundation', () => {
        foundation.handleKeydown(event);
        expect(mockAdapter.openMenu).toHaveBeenCalledTimes(8);
        checkNumTimesSpyCalledWithArgs(
-           mockAdapter.setSelectedTextAttr, ['aria-expanded', 'true'], 8);
+           mockAdapter.setSelectAnchorAttr, ['aria-expanded', 'true'], 8);
        expect(preventDefault).toHaveBeenCalledTimes(8);
      });
 
@@ -650,7 +650,7 @@ describe('MDCSelectFoundation', () => {
      () => {
        const {foundation, mockAdapter} = setupTest();
        foundation.setValid(true);
-       expect(mockAdapter.setSelectedTextAttr)
+       expect(mockAdapter.setSelectAnchorAttr)
            .toHaveBeenCalledWith('aria-invalid', 'false');
        expect(mockAdapter.removeClass).toHaveBeenCalledWith(cssClasses.INVALID);
      });
@@ -658,7 +658,7 @@ describe('MDCSelectFoundation', () => {
   it('#setValid false sets aria-invalid to true and adds invalid class', () => {
     const {foundation, mockAdapter} = setupTest();
     foundation.setValid(false);
-    expect(mockAdapter.setSelectedTextAttr)
+    expect(mockAdapter.setSelectAnchorAttr)
         .toHaveBeenCalledWith('aria-invalid', 'true');
     expect(mockAdapter.addClass).toHaveBeenCalledWith(cssClasses.INVALID);
   });
@@ -700,33 +700,33 @@ describe('MDCSelectFoundation', () => {
   it('#setRequired adds/removes ${cssClasses.REQUIRED} class name', () => {
     const {foundation, mockAdapter} = setupTest();
     foundation.setRequired(true);
-    expect(mockAdapter.addClass).toHaveBeenCalledWith(cssClasses.REQUIRED);
-    expect(mockAdapter.addClass).toHaveBeenCalledTimes(1);
+    checkNumTimesSpyCalledWithArgs(
+        mockAdapter.addClass, [cssClasses.REQUIRED], 1);
     foundation.setRequired(false);
-    expect(mockAdapter.removeClass).toHaveBeenCalledWith(cssClasses.REQUIRED);
-    expect(mockAdapter.removeClass).toHaveBeenCalledTimes(1);
+    checkNumTimesSpyCalledWithArgs(
+        mockAdapter.removeClass, [cssClasses.REQUIRED], 1);
   });
 
   it('#setRequired sets aria-required through adapter', () => {
     const {foundation, mockAdapter} = setupTest();
     foundation.setRequired(true);
-    expect(mockAdapter.setSelectedTextAttr)
+    expect(mockAdapter.setSelectAnchorAttr)
         .toHaveBeenCalledWith('aria-required', 'true');
     foundation.setRequired(false);
-    expect(mockAdapter.setSelectedTextAttr)
+    expect(mockAdapter.setSelectAnchorAttr)
         .toHaveBeenCalledWith('aria-required', 'false');
   });
 
   it('#getRequired returns true if aria-required is true', () => {
     const {foundation, mockAdapter} = setupTest();
-    mockAdapter.getSelectedTextAttr.withArgs('aria-required')
+    mockAdapter.getSelectAnchorAttr.withArgs('aria-required')
         .and.returnValue('true');
     expect(foundation.getRequired()).toBe(true);
   });
 
   it('#getRequired returns false if aria-required is false', () => {
     const {foundation, mockAdapter} = setupTest();
-    mockAdapter.getSelectedTextAttr.withArgs('aria-required')
+    mockAdapter.getSelectAnchorAttr.withArgs('aria-required')
         .and.returnValue('false');
     expect(foundation.getRequired()).toBe(false);
   });

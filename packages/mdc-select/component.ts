@@ -53,7 +53,7 @@ export class MDCSelect extends MDCComponent<MDCSelectFoundation> {
   private menu_!: MDCMenu; // assigned in menuSetup_()
 
   private selectAnchor_!: HTMLElement; // assigned in initialize()
-  private selectedText_!: HTMLElement; // assigned in initialize()
+  private selectedText_!: HTMLInputElement;  // assigned in initialize()
 
   private menuElement_!: Element; // assigned in menuSetup_()
   private leadingIcon_?: MDCSelectIcon; // assigned in initialize()
@@ -79,7 +79,9 @@ export class MDCSelect extends MDCComponent<MDCSelectFoundation> {
       helperTextFactory: MDCSelectHelperTextFactory = (el) => new MDCSelectHelperText(el),
   ) {
     this.selectAnchor_ = this.root_.querySelector(strings.SELECT_ANCHOR_SELECTOR) as HTMLElement;
-    this.selectedText_ = this.root_.querySelector(strings.SELECTED_TEXT_SELECTOR) as HTMLElement;
+    this.selectedText_ =
+        this.root_.querySelector(strings.SELECTED_TEXT_SELECTOR) as
+        HTMLInputElement;
 
     if (!this.selectedText_) {
       throw new Error(
@@ -88,8 +90,9 @@ export class MDCSelect extends MDCComponent<MDCSelectFoundation> {
       );
     }
 
-    if (this.selectedText_.hasAttribute(strings.ARIA_CONTROLS)) {
-      const helperTextElement = document.getElementById(this.selectedText_.getAttribute(strings.ARIA_CONTROLS)!);
+    if (this.selectAnchor_.hasAttribute(strings.ARIA_CONTROLS)) {
+      const helperTextElement = document.getElementById(
+          this.selectAnchor_.getAttribute(strings.ARIA_CONTROLS)!);
       if (helperTextElement) {
         this.helperText_ = helperTextFactory(helperTextElement);
       }
@@ -125,7 +128,7 @@ export class MDCSelect extends MDCComponent<MDCSelectFoundation> {
     this.handleFocus_ = () => this.foundation_.handleFocus();
     this.handleBlur_ = () => this.foundation_.handleBlur();
     this.handleClick_ = (evt) => {
-      this.selectedText_.focus();
+      this.selectAnchor_.focus();
       this.foundation_.handleClick(this.getNormalizedXCoordinate_(evt));
     };
     this.handleKeydown_ = (evt) => this.foundation_.handleKeydown(evt);
@@ -133,27 +136,26 @@ export class MDCSelect extends MDCComponent<MDCSelectFoundation> {
     this.handleMenuOpened_ = () => this.foundation_.handleMenuOpened();
     this.handleMenuClosed_ = () => this.foundation_.handleMenuClosed();
 
-    this.selectedText_.addEventListener('focus', this.handleFocus_);
-    this.selectedText_.addEventListener('blur', this.handleBlur_);
+    this.selectAnchor_.addEventListener('focus', this.handleFocus_);
+    this.selectAnchor_.addEventListener('blur', this.handleBlur_);
 
-    this.selectedText_.addEventListener('click', this.handleClick_ as EventListener);
+    this.selectAnchor_.addEventListener(
+        'click', this.handleClick_ as EventListener);
 
-    this.selectedText_!.addEventListener('keydown', this.handleKeydown_);
+    this.selectAnchor_.addEventListener('keydown', this.handleKeydown_);
     this.menu_!.listen(menuSurfaceConstants.strings.CLOSED_EVENT, this.handleMenuClosed_);
     this.menu_!.listen(menuSurfaceConstants.strings.OPENED_EVENT, this.handleMenuOpened_);
     this.menu_!.listen(menuConstants.strings.SELECTED_EVENT, this.handleMenuItemAction_);
     this.foundation_.init();
-
-    // Sets disabled state in foundation
-    this.disabled = this.root_.classList.contains(cssClasses.DISABLED);
   }
 
   destroy() {
-    this.selectedText_.removeEventListener('change', this.handleChange_);
-    this.selectedText_.removeEventListener('focus', this.handleFocus_);
-    this.selectedText_.removeEventListener('blur', this.handleBlur_);
-    this.selectedText_.removeEventListener('keydown', this.handleKeydown_);
-    this.selectedText_.removeEventListener('click', this.handleClick_ as EventListener);
+    this.selectAnchor_.removeEventListener('change', this.handleChange_);
+    this.selectAnchor_.removeEventListener('focus', this.handleFocus_);
+    this.selectAnchor_.removeEventListener('blur', this.handleBlur_);
+    this.selectAnchor_.removeEventListener('keydown', this.handleKeydown_);
+    this.selectAnchor_.removeEventListener(
+        'click', this.handleClick_ as EventListener);
 
     this.menu_.unlisten(menuSurfaceConstants.strings.CLOSED_EVENT, this.handleMenuClosed_);
     this.menu_.unlisten(menuSurfaceConstants.strings.OPENED_EVENT, this.handleMenuOpened_);
@@ -279,8 +281,12 @@ export class MDCSelect extends MDCComponent<MDCSelectFoundation> {
     // tslint:disable:object-literal-sort-keys Methods should be in the same order as the adapter interface.
     const adapter: MDCRippleAdapter = {
       ...MDCRipple.createAdapter({root_: this.selectAnchor_}),
-      registerInteractionHandler: (evtType, handler) => this.selectedText_.addEventListener(evtType, handler),
-      deregisterInteractionHandler: (evtType, handler) => this.selectedText_.removeEventListener(evtType, handler),
+      registerInteractionHandler: (evtType, handler) => {
+        this.selectAnchor_.addEventListener(evtType, handler);
+      },
+      deregisterInteractionHandler: (evtType, handler) => {
+        this.selectAnchor_.removeEventListener(evtType, handler);
+      },
     };
     // tslint:enable:object-literal-sort-keys
     return new MDCRipple(this.selectAnchor_, new MDCRippleFoundation(adapter));
@@ -289,28 +295,58 @@ export class MDCSelect extends MDCComponent<MDCSelectFoundation> {
   private getSelectAdapterMethods_() {
     // tslint:disable:object-literal-sort-keys Methods should be in the same order as the adapter interface.
     return {
-      getSelectedMenuItem: () => this.menuElement_!.querySelector(strings.SELECTED_ITEM_SELECTOR),
-      getMenuItemAttr: (menuItem: Element, attr: string) => menuItem.getAttribute(attr),
-      setSelectedText: (text: string) => this.selectedText_.textContent = text,
-      isSelectedTextFocused: () => document.activeElement === this.selectedText_,
-      getSelectedTextAttr: (attr: string) => this.selectedText_.getAttribute(attr),
-      setSelectedTextAttr: (attr: string, value: string) => this.selectedText_.setAttribute(attr, value),
-      openMenu: () => this.menu_.open = true,
-      closeMenu: () => this.menu_.open = false,
-      getAnchorElement: () => this.root_.querySelector(strings.SELECT_ANCHOR_SELECTOR)!,
-      setMenuAnchorElement: (anchorEl: HTMLElement) => this.menu_.setAnchorElement(anchorEl),
-      setMenuAnchorCorner: (anchorCorner: menuSurfaceConstants.Corner) => this.menu_.setAnchorCorner(anchorCorner),
-      setMenuWrapFocus: (wrapFocus: boolean) => this.menu_.wrapFocus = wrapFocus,
-      setAttributeAtIndex: (index: number, attributeName: string, attributeValue: string) =>
-        this.menu_.items[index].setAttribute(attributeName, attributeValue),
-      removeAttributeAtIndex: (index: number, attributeName: string) =>
-        this.menu_.items[index].removeAttribute(attributeName),
-      focusMenuItemAtIndex: (index: number) => (this.menu_.items[index] as HTMLElement).focus(),
+      getSelectedMenuItem: () =>
+          this.menuElement_!.querySelector(strings.SELECTED_ITEM_SELECTOR),
+      getMenuItemAttr: (menuItem: Element, attr: string) =>
+          menuItem.getAttribute(attr),
+      setSelectedText: (text: string) => {
+        this.selectedText_.value = text;
+      },
+      isSelectAnchorFocused: () =>
+          document.activeElement === this.selectAnchor_,
+      getSelectAnchorAttr: (attr: string) =>
+          this.selectAnchor_.getAttribute(attr),
+      setSelectAnchorAttr: (attr: string, value: string) => {
+        this.selectAnchor_.setAttribute(attr, value);
+      },
+      openMenu: () => {
+        this.menu_.open = true;
+      },
+      closeMenu: () => {
+        this.menu_.open = false;
+      },
+      getAnchorElement: () =>
+          this.root_.querySelector(strings.SELECT_ANCHOR_SELECTOR)!,
+      setMenuAnchorElement: (anchorEl: HTMLElement) => {
+        this.menu_.setAnchorElement(anchorEl);
+      },
+      setMenuAnchorCorner: (anchorCorner: menuSurfaceConstants.Corner) => {
+        this.menu_.setAnchorCorner(anchorCorner);
+      },
+      setMenuWrapFocus: (wrapFocus: boolean) => {
+        this.menu_.wrapFocus = wrapFocus;
+      },
+      setAttributeAtIndex:
+          (index: number, attributeName: string, attributeValue: string) => {
+            this.menu_.items[index].setAttribute(attributeName, attributeValue);
+          },
+      removeAttributeAtIndex: (index: number, attributeName: string) => {
+        this.menu_.items[index].removeAttribute(attributeName);
+      },
+      focusMenuItemAtIndex: (index: number) => {
+        (this.menu_.items[index] as HTMLElement).focus();
+      },
       getMenuItemCount: () => this.menu_.items.length,
-      getMenuItemValues: () => this.menu_.items.map((el) => el.getAttribute(strings.VALUE_ATTR) || ''),
-      getMenuItemTextAtIndex: (index: number) => this.menu_.items[index].textContent as string,
-      addClassAtIndex: (index: number, className: string) => this.menu_.items[index].classList.add(className),
-      removeClassAtIndex: (index: number, className: string) => this.menu_.items[index].classList.remove(className),
+      getMenuItemValues: () => this.menu_.items.map(
+          (el) => el.getAttribute(strings.VALUE_ATTR) || ''),
+      getMenuItemTextAtIndex: (index: number) =>
+          this.menu_.items[index].textContent as string,
+      addClassAtIndex: (index: number, className: string) => {
+        this.menu_.items[index].classList.add(className);
+      },
+      removeClassAtIndex: (index: number, className: string) => {
+        this.menu_.items[index].classList.remove(className);
+      },
     };
     // tslint:enable:object-literal-sort-keys
   }

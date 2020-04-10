@@ -833,8 +833,8 @@
     // can emulate center alignment and force the baseline to use the input
     // text by making the input the full height of the container and removing
     // the baseline strut.
-
-    // TODO: IE11 does not respect this, and makes the leading icon (if present)
+    //
+    // IE11 does not respect this, and makes the leading icon (if present)
     // the baseline.
     .mdc-text-field__input {
       height: 100%;

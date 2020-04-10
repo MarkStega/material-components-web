@@ -64,9 +64,9 @@ export class MDCSelectFoundation extends MDCFoundation<MDCSelectAdapter> {
       setRippleCenter: () => undefined,
       notifyChange: () => undefined,
       setSelectedText: () => undefined,
-      isSelectedTextFocused: () => false,
-      getSelectedTextAttr: () => '',
-      setSelectedTextAttr: () => undefined,
+      isSelectAnchorFocused: () => false,
+      getSelectAnchorAttr: () => '',
+      setSelectAnchorAttr: () => undefined,
       openMenu: () => undefined,
       closeMenu: () => undefined,
       getAnchorElement: () => null,
@@ -112,6 +112,7 @@ export class MDCSelectFoundation extends MDCFoundation<MDCSelectAdapter> {
     this.helperText_ = foundationMap.helperText;
 
     this.menuItemValues_ = this.adapter_.getMenuItemValues();
+    this.setDisabled(this.adapter_.hasClass(cssClasses.DISABLED));
   }
 
   /** Returns the index of the currently selected menu item, or -1 if none. */
@@ -180,8 +181,9 @@ export class MDCSelectFoundation extends MDCFoundation<MDCSelectAdapter> {
       this.leadingIcon_.setDisabled(this.disabled_);
     }
 
-    this.adapter_.setSelectedTextAttr('tabindex', this.disabled_ ? '-1' : '0');
-    this.adapter_.setSelectedTextAttr('aria-disabled', this.disabled_.toString());
+    this.adapter_.setSelectAnchorAttr('tabindex', this.disabled_ ? '-1' : '0');
+    this.adapter_.setSelectAnchorAttr(
+        'aria-disabled', this.disabled_.toString());
   }
 
   /**
@@ -215,10 +217,10 @@ export class MDCSelectFoundation extends MDCFoundation<MDCSelectAdapter> {
   handleMenuClosed() {
     this.adapter_.removeClass(cssClasses.ACTIVATED);
     this.isMenuOpen_ = false;
-    this.adapter_.setSelectedTextAttr('aria-expanded', 'false');
+    this.adapter_.setSelectAnchorAttr('aria-expanded', 'false');
 
     // Unfocus the select if menu is closed without a selection
-    if (!this.adapter_.isSelectedTextFocused()) {
+    if (!this.adapter_.isSelectAnchorFocused()) {
       this.blur_();
     }
   }
@@ -278,7 +280,7 @@ export class MDCSelectFoundation extends MDCFoundation<MDCSelectAdapter> {
 
     this.adapter_.openMenu();
     this.isMenuOpen_ = true;
-    this.adapter_.setSelectedTextAttr('aria-expanded', 'true');
+    this.adapter_.setSelectAnchorAttr('aria-expanded', 'true');
   }
 
   handleKeydown(event: KeyboardEvent) {
@@ -294,7 +296,7 @@ export class MDCSelectFoundation extends MDCFoundation<MDCSelectAdapter> {
     if (this.adapter_.hasClass(cssClasses.FOCUSED) && (isEnter || isSpace || arrowUp || arrowDown)) {
       this.adapter_.openMenu();
       this.isMenuOpen_ = true;
-      this.adapter_.setSelectedTextAttr('aria-expanded', 'true');
+      this.adapter_.setSelectAnchorAttr('aria-expanded', 'true');
       event.preventDefault();
     }
   }
@@ -336,7 +338,7 @@ export class MDCSelectFoundation extends MDCFoundation<MDCSelectAdapter> {
   }
 
   setValid(isValid: boolean) {
-    this.adapter_.setSelectedTextAttr('aria-invalid', (!isValid).toString());
+    this.adapter_.setSelectAnchorAttr('aria-invalid', (!isValid).toString());
     if (isValid) {
       this.adapter_.removeClass(cssClasses.INVALID);
     } else {
@@ -360,11 +362,11 @@ export class MDCSelectFoundation extends MDCFoundation<MDCSelectAdapter> {
     } else {
       this.adapter_.removeClass(cssClasses.REQUIRED);
     }
-    this.adapter_.setSelectedTextAttr('aria-required', isRequired.toString());
+    this.adapter_.setSelectAnchorAttr('aria-required', isRequired.toString());
   }
 
   getRequired() {
-    return this.adapter_.getSelectedTextAttr('aria-required') === 'true';
+    return this.adapter_.getSelectAnchorAttr('aria-required') === 'true';
   }
 
   init() {
